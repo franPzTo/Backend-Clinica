@@ -12,6 +12,7 @@ const { globalLimiter } = require('./middlewares/rateLimiter');
 const errorHandler = require('./middlewares/errorHandler');
 const userRoutes = require('./routes/user.Routes');
 const createAdmin = require("./Utils/createAdmin");
+const turnRouter = require("./routes/turn.Router");
 
 // Use express to create the server
 const app = express();
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 // Use Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/turn', turnRouter);
 
 // Routes   
 
