@@ -1,6 +1,5 @@
 // src/Utils/createAdmin.js
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 
 const createAdmin = async () => {
   try {
@@ -13,18 +12,15 @@ const createAdmin = async () => {
       return;
     }
 
-    // Crear el admin
-    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-
-   const admin = new User({
-       email: process.env.ADMIN_EMAIL,
-       password: process.env.ADMIN_PASSWORD,
-       name: process.env.ADMIN_NAME,
-       surname: process.env.ADMIN_LASTNAME,
-       role: 'admin',
-       verifiedEmail: true,
-       DNI: process.env.ADMIN_DNI   // <-- agregamos DNI único
-   })
+  const admin = new User({
+    email: adminEmail,
+    password: process.env.ADMIN_PASSWORD,
+    name: process.env.ADMIN_NAME,
+    surname: process.env.ADMIN_LASTNAME,
+    role: 'admin',
+    verifiedEmail: true,
+    DNI: process.env.ADMIN_DNI   // <-- agregamos DNI único
+  })
 
     await admin.save();
     console.log('👩‍💻 Admin creado exitosamente!');

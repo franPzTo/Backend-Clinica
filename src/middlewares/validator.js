@@ -72,7 +72,7 @@ const validateLogin = [
     .normalizeEmail()
     .custom(async (email)=>{
         const user = await User.findOne({email});
-        if (user) {
+        if (!user) {
             throw new Error('Credencial Incorrecta!')
         }
     })
@@ -124,7 +124,7 @@ const validateUserId = [
 const validateUpdateRole = [
     body('role')
         .notEmpty().withMessage('Debe proporcionar el rol del usuario')
-        .isIn(['user', 'admin']).withMessage('El rol debe ser: user o admin'),
+        .isIn(['patient', 'doctor', 'secretary', 'admin']).withMessage('El rol debe ser: patient, doctor, secretary o admin'),
     
     handleValidationErrors 
 ];
