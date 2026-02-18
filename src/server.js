@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const morgan = require('morgan');
 const cookieParser =require('cookie-parser')
+const cors =require('cors')
 
 
 
@@ -21,6 +22,10 @@ connectDB()
 createAdmin();
 
 // Middleware
+app.use(cors({
+    origin: 'http://localhost:5173', 
+    credentials: true
+}));
 app.use(morgan('dev'));
 app.use(globalLimiter)
 app.use(cookieParser())

@@ -1,5 +1,6 @@
 // src/Utils/createAdmin.js
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 const createAdmin = async () => {
   try {
@@ -11,6 +12,7 @@ const createAdmin = async () => {
       console.log('✔ Admin ya existe!');
       return;
     }
+
 
   const admin = new User({
     email: adminEmail,

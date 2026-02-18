@@ -7,7 +7,7 @@ const { validateMongoID, validateUserId, validateUpdateRole} = require("../middl
 const router = express.Router();
 
 
-router.use(verifyAuth, verifyAdmin); 
+router.use(verifyAuth, verifyAdmin);
 
 //RUTAS PRIVADAS PARA ADMINISTRACIÓN DE USUARIOS
 router.get('/', getAllUsers);

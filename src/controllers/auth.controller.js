@@ -140,38 +140,77 @@ const logout = async (req,res,next)=>{
 }
 
 
-// const getUserProfile = async (req,res,next)=>{
-//     try {
+const getUserProfile = async (req,res, next) => {
+    try {
+        const user = await User.findById(req.user._id)
+        .select('-password -verificationCode -codeExpiration')
+        ;
+        return res.status(200).json({
+            ok:true,
+            message: "Perfil del usuario obtenido correctamente",
+            data: user
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+const updateProfilePhoto = async (req,res, next) => {
+    try {
+        if(!req.file){
+            return res.status(400).json({
+                ok:false,
+                message:"no se proporcionó ninguna imagen"
+            })
+        }
+        const user = await User.findById(req.user._id)
+        .select('-password -verificationCode -codeExpiration')
+        ;
+        if(user.profilePic){
+            const path = require('path');
+            const previousPhoto = path.join(__dirname, '../../uploads/profiles',user.profilePic)
+            deleteOneFile(previousPhoto)
+        }
+        user.profilePic = req.file.filename;
+        await user.save()
+        return res.status(201).json({
+            ok:true,
+            message:"Foto de perfil actualizada 😊",
+            data: user.profilePic
+        })
         
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+    } catch (error) {
+        next(error)
+    }
+}
 
 
-// const updateProfilePhoto = async (req,res,next)=>{
-//     try {
+const updateUserProfile = async (req, res, next) => {
+    try {
+        const {name, password, birthdate} = req.body
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id, 
+            { name, password, birthdate }, 
+            { new: true, runValidators: true } 
+        ).select('-password -verificationCode -codeExpiration');
         
-//     } catch (error) {
-//         next(error)
-//     }
-// }
-
-
-// const updateUserProfile = async (req,res,next)=>{
-//     try {
-        
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+        res.status(200).json({
+            ok: true,
+            message: "Perfil actualizado correctamente",
+            data: updatedUser
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
 module.exports={
     register,
     login,
     verifyEmail,
     logout,
-    // getUserProfile,
-    // updateProfilePhoto,
-    // updateUserProfile,
+    getUserProfile,
+    updateProfilePhoto,
+    updateUserProfile,
 }
