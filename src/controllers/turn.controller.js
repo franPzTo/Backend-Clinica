@@ -5,10 +5,33 @@ const createTurn = async (req, res) => {
     try {
         const { patient, doctor, date, notes } = req.body;
 
+        if(turnDate < now) {
+            return res.status(400).json({
+                ok: false,
+                message: "No se puede crear un turno en el pasado"
+            })
+        }
+
+        const hour = turnDate.getHours();
+        if (hour < 8 || hour >= 18){
+            return res.status(400).json({
+                ok : false,
+                message: "Horario fuera del horario laboral (8 a 18)"
+            })
+        }
+
+        const minutos = turnDate.getMinutes();
+        if (minutes !== 0 && minutes !== 30){
+            return res.status(400).json({
+                ok: false,
+                message : "Los turnos deben ser cada 30 minutos"
+            })
+        }
+
         const newTurn = new Turn({
-            patient,
+            patient ,
             doctor,
-            date,
+            date: turnDate,
             notes
         });
 
@@ -19,12 +42,13 @@ const createTurn = async (req, res) => {
     }
 };
 
-// Listar turnos
+
+// listar turnos
 const getTurns = async (req, res) => {
     try {
         const turns = await Turn.find()
             .populate('patient', 'name surname email')
-            .populate('doctor', 'name surname email')
+            .populate('doctor','name surname email')
             .sort({ date: 1 });
         res.json({ ok: true, turns });
     } catch (error) {
@@ -32,10 +56,10 @@ const getTurns = async (req, res) => {
     }
 };
 
-// Actualizar turno
+// actualizar turno
 const updateTurn = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } =req.params;
         const updates = req.body;
 
         const turn = await Turn.findByIdAndUpdate(id, updates, { new: true });
@@ -47,10 +71,10 @@ const updateTurn = async (req, res) => {
     }
 };
 
-// Cancelar turno
-const cancelTurn = async (req, res) => {
+//Cancelar turno
+const cancelTurn = async(req, res) => {
     try {
-        const { id } = req.params;
+        const { id } =req.params;
 
         const turn = await Turn.findByIdAndUpdate(id, { status: 'canceled' }, { new: true });
         if (!turn) return res.status(404).json({ ok: false, message: 'Turno no encontrado' });
@@ -61,4 +85,10 @@ const cancelTurn = async (req, res) => {
     }
 };
 
-module.exports = { createTurn, getTurns, updateTurn, cancelTurn };
+
+
+module.exports = 
+{ createTurn,
+  getTurns, 
+  updateTurn,
+  cancelTurn };
