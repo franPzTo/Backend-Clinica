@@ -72,7 +72,7 @@ const validateLogin = [
     .normalizeEmail()
     .custom(async (email)=>{
         const user = await User.findOne({email});
-        if (user) {
+        if (!user) {
             throw new Error('Credencial Incorrecta!')
         }
     })
