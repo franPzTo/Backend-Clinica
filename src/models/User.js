@@ -35,6 +35,14 @@ const userSchema = new mongoose.Schema({
         enum:['patient', 'doctor', 'secretary', 'admin'],
         default:'patient',
     },
+
+    specialties:{
+        type: [String],
+        default: []
+    },
+    
+    office : {type: String},
+
     verifiedEmail:{
         type: Boolean,
         require: false,

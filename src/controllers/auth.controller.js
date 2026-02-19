@@ -5,7 +5,7 @@ const fs = require('fs')
 const { deleteOneFile } = require('../Utils/fileCleanup')
 
 const generateToken = (id)=>{
-    return jwt.sing({id}, pocess.env.JWT_SECRET,{
+    return jwt.sign({id}, process.env.JWT_SECRET,{
         expiresIn:'1h'
     })
 }
@@ -55,7 +55,7 @@ const login = async (req,res,next)=>{
     try {
         const {email, password}= req.body
         const user = await User.findOne({email})
-        const validPassword = await User.comparePassword(password)
+        const validPassword = await user.comparePasswords(password)
         if(!validPassword){
             return res.status(401).json({
                 ok: false,
@@ -81,7 +81,7 @@ const login = async (req,res,next)=>{
             data: {
                 id: user._id,
                 name: user.name,
-                emmail: user.emmail,
+                emmail: user.email,
                 role: user.role,
             }
         })

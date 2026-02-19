@@ -1,6 +1,29 @@
 const User = require('../models/User');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
+const createUser = async (req, res) => {
+    try {
+        const { name, surname, email, password, role, specialties, office } = req.body;
+        // verificar que no exista el email
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ ok: false, message: "El email ya existe" });
+        }
+        const newUser = new User({
+            name,surname, email, password, role, specialties,office
+        });
+        await newUser.save();
+
+        return res.status(201).json({
+            ok: true,
+            message: "Usuario creado correctamente",
+            data: newUser
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ ok: false, message: error.message });
+    }
+};
 
 const getAllUsers = async (req,res) => {
     try {
@@ -127,9 +150,122 @@ const deleteUser = async (req,res) => {
     }
 }
 
+
+//Funciones para el perfil del usuario logueado
+
+const getMyProfile = async (req,res) => {
+    try {
+        const user = await User.findById(req.user._id)
+        .select("-password -verificationCode -codeExpiration");
+        if (!user) {
+            return res.status(404).json({
+                ok:false,
+                message: "Usuario no encontrado"
+            })
+        }
+
+        return res.status(200).json({
+            ok:true,
+            message: "Perfil del usuario obtenido correctamente",
+            data:user
+        })
+
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            ok:false,
+            message: error.message
+        })
+    }
+}
+
+
+const updateMyProfile = async (req,res) => {
+    try {
+        const {name, email, phone, address} = req.body;
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {name, email, phone, address},
+            {new:true, runValidators:true}
+        ).select("-password -verificationCode -codeExpiration")
+
+        return res.status(200).json({
+            ok:true,
+            message: "Perfil actualizado correctamente",
+            data:user
+        })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            ok:false,
+            message: error.message
+        })
+    }
+}
+
+
+//ver  turnos
+const getAllAppointments = async (req,res)=>{
+    const appointments = await Appointment.find()
+        .populate('patient', 'name email')
+        .populate('doctor', 'name email');
+    
+    res.json({
+        ok:true,
+        data: appointments
+    });
+};
+
+// crear turno
+const createAppointment = async (req,res)=>{
+    const { patient, doctor, date, time } = req.body;
+
+    const newAppointment = await Appointment.create({
+        patient, doctor, date, time, status: 'PENDIENTE'
+    });
+
+    res.status(201).json({
+        ok:true,
+        message:'Turno creado correctamente',
+        data: newAppointment
+    });
+};
+
+// Actualizar turno (solo estado o reasignar médico)
+const updateAppointment = async (req,res)=>{
+    const { status, doctor } = req.body;
+    const appointment = await Appointment.findByIdAndUpdate(
+        req.params.id,
+        { status, doctor },
+        { new: true }
+    );
+    res.json({
+        ok:true,
+        message:'Turno actualizado',
+        data: appointment
+    });
+};
+
+// Cancelar turno
+const cancelAppointment = async (req,res)=>{
+    const appointment = await Appointment.findByIdAndDelete(req.params.id);
+    res.json({
+        ok:true,
+        message:'Turno cancelado',
+        data: appointment
+    });
+};
+
 module.exports = {
     deleteUser,
     updateUserRole,
     getAllUsers,
-    getUserById
+    getUserById,
+
+    getMyProfile,
+    updateMyProfile,
+    createUser,
+    cancelAppointment
 }
+
+

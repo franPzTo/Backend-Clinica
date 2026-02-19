@@ -141,18 +141,9 @@ const validateMongoID = [
 
 
 
-// const validateUptateRole = [
-
-//     handleValidationErrors
-// ]
 
 
-// const validateAdmin = [
 
-//     handleValidationErrorWithFiles
-// ]
-
-// const validateDoctor = [
 
 
 //     handleValidationErrorWithFiles
