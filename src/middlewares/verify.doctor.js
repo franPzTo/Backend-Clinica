@@ -1,13 +1,14 @@
-src/middlewares/verifyDoctor.js
 
-module.exports = (req, res, next) => {
-    // req.user ya viene de verifyAuth (usuario logueado)
-    if (req.user.role !== process.env.DOCTOR_ROLE) {
+const verifyDoctor = (req, res, next) => {
+  
+    if (req.user.role !== 'doctor') {
         return res.status(403).json({
             ok: false,
-            message: "Acceso solo para médicos"
+            message: 'Acceso denegado. Solo doctores.'
         });
     }
-    // Si es doctor, sigue a la ruta
+
     next();
 };
+
+module.exports = verifyDoctor;

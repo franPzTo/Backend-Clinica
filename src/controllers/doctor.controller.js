@@ -1,7 +1,7 @@
-// src/controllers/doctor.controller.js
+
 const Appointment = require("../models/Appointment");
 
-//  turnos del médico logueado
+// turnos del médico logueado
 const getMyAppointments = async (req, res) => {
     try {
         const appointments = await Appointment.find({
@@ -21,7 +21,7 @@ const getMyAppointments = async (req, res) => {
     }
 };
 
-// cambia estado / diagnóstico
+//cambia estado / diagnóstico
 const updateAppointmentStatus = async (req, res) => {
     const { status, diagnosis, notes } = req.body;
 

@@ -1,4 +1,3 @@
-// src/routes/user.Routes.js
 const express = require("express");
 const { verifyAuth} = require("../middlewares/auth");
 const { verifyAdmin, verifySecretary } = require("../middlewares/user");
@@ -15,7 +14,7 @@ router.patch('/me', verifyAuth, updateMyProfile);
 
 router.use(verifyAuth, verifyAdmin, verifySecretary);
 
-//RUTAS PRIVADAS PARA ADMINISTRACIÓN DE USUARIOS
+// rutas privadas para la administracion de usuarios
 router.post('/', verifyAuth, verifyAdmin, createUser);
 router.get('/', getAllUsers);
 router.get('/:id', validateUserId, getUserById)
