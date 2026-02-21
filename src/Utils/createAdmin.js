@@ -1,34 +1,30 @@
-// src/Utils/createAdmin.js
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 
-const createAdmin = async () => {
-  try {
+const createAdmin = async ()=>{
+  try{
+    // 
     const adminEmail = process.env.ADMIN_EMAIL;
-
-    // Verificar si ya existe el admin
-    const existingAdmin = await User.findOne({ email: adminEmail });
-    if (existingAdmin) {
-      console.log('✔ Admin ya existe!');
-      return;
+    // existe?
+    const existAdmin = await User.findOne({email: adminEmail}); 
+    if(existAdmin){
+      console.log('Admin ya existe!');
+      return
     }
-
-
-  const admin = new User({
-    email: adminEmail,
-    password: process.env.ADMIN_PASSWORD,
-    name: process.env.ADMIN_NAME,
-    surname: process.env.ADMIN_LASTNAME,
-    role: 'admin',
-    verifiedEmail: true,
-    DNI: process.env.ADMIN_DNI   // <-- agregamos DNI único
-  })
-
-    await admin.save();
-    console.log('👩‍💻 Admin creado exitosamente!');
-  } catch (error) {
-    console.error('❌ Error al crear Admin: ', error.message);
+    // crear Admin
+    const Admin = new User({
+      email: adminEmail,
+      password: process.env.ADMIN_PASSWORD,
+      name: process.env.ADMIN_NAME,
+      surname: process.env.ADMIN_SURNAME,
+      role: 'admin',
+      DNI: process.env.ADMIN_DNI,
+      verifiedEmail: true
+    })
+    await Admin.save();
+    console.log('Admin creado exitosamente!');
+  } catch(error){
+    console.error('Error al crear el admin:', error);
   }
-};
+}
 
 module.exports = createAdmin;
