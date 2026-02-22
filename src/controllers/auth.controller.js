@@ -113,8 +113,45 @@ const login = async (req, res, next) => {
     }
 }
 
+const verifyEmail = async (req,res,next)=>{
+    try {
+        const { email, code } = req.body;
+        const user = await User.findOne({ email });
+        if(user.verifiedEmail){
+            return res.status(400).json({
+                success: false,
+                message: 'El correo electrónico ya ha sido verificado.'
+            })
+        }
+        if(user.verificationCode !== code){
+            return res.status(400).json({
+                success: false,
+                message: 'Código de verificación incorrecto.'
+            })
+        }
+        if(new Date() > user.codeExpiration){
+            return res.status(400).json({
+                success:false,
+                message:'El código de verificación ha expirado. Solicitar uno nuevo.'
+            })
+        }
+        user.verifiedEmail = true; // cambiamos en verificado del email a true.
+        user.verificationCode = null; // Limpiamos el código de verificación.
+        user.codeExpiration = null; // Limpiamos la fecha de expiración.
+        await user.save(); // Cargamos los cambios en la base de datos
+        return res.status(200).json({
+            success: true,
+            message:'Email verificado exitosomente!!. Ahora puede Inicar Sesión'
+        })
+    } catch(error){
+        next(error)
+    }
+}
+
+
 
 module.exports = {
     register,
     login,
+    verifyEmail
 }

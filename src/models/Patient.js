@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const PatientSchema = new mongoose.Schema({
+const patientSchema = new mongoose.Schema({
     userId:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -18,14 +18,12 @@ const PatientSchema = new mongoose.Schema({
     },
     allergies: [{
         type: String,
-        required: false
     }],
     medicalHistory:[{
         date: Date,
         diagnosis: String,
-        required: false
     }]
 });
 
 
-module.exports = mongoose.model('Patient', PatientSchema);
+module.exports = mongoose.model('Patient', patientSchema);

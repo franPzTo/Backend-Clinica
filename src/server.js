@@ -2,24 +2,24 @@ const express = require('express');
 require('dotenv').config();
 const morgan = require('morgan');
 const cors = require('cors');
-const paht = require('paht');
+// const paht = require('paht');
 const cookieParser = require('cookie-parser');
 
 // Traemos las rutas y sus funciones
-const adminRouter = require('./routes/admin.route');
-const userRouter = require('./routes/user.route');
-const doctorRouter = require('./routes/doctor.route');
-const secretaryRouter = require('./routes/secretary.route');
-const authRouter = require('./routes/auth.route');
+// const adminRouter = require('./routes/admin.routes');
+// const userRouter = require('./routes/user.routes');
+// const doctorRouter = require('./routes/doctor.routes');
+// const secretaryRouter = require('./routes/secretary.routes');
+const authRouter = require('./routes/auth.routes');
 // Traemos la Base de datos, el Creador de Admin y los middlewares generales
-const connectDB = require('./config/database') // Hecho
-const createAdmin = require('./Utils/createAdmin') 
+const connectDB = require('./config/database'); // Hecho
+const createAdmin = require('./Utils/createAdmin'); // Hecho
 const errorHandler = require('./middlewares/errorHandler')
 const { globalLimiter } = require('./middlewares/rateLimiter')
 
 // Declarar de Express y usarlo
 const app = express();
-// 
+// Conexión con la Base de Datos y creación del Admin
 connectDB()
 createAdmin()
 // Conexión con el Frontend
@@ -33,16 +33,16 @@ app.use(globalLimiter);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true})); // Leer formularios
-// Middlewares manejador de Errores
-app.use(errorHandler);
 
 // Decaramos las rutas y donde estan
 app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/user', userRouter);
-app.use('/api/v1/doctor', doctorRouter);
-app.use('/api/v1/secretary', secretaryRouter);
-app.use('/api/v1/admin', adminRouter);
+// app.use('/api/v1/user', userRouter);
+// app.use('/api/v1/doctor', doctorRouter);
+// app.use('/api/v1/secretary', secretaryRouter);
+// app.use('/api/v1/admin', adminRouter);
 
+// Middlewares manejador de Errores
+app.use(errorHandler);
 // Declaramos el puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, ()=>{

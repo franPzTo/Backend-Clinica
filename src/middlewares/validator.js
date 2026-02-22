@@ -64,8 +64,22 @@ const validateRegister = [
     handleValidationErrors
 ]
 
+const validateEmail = [
+    body('email')
+        .notEmpty().withMessage('El correo electrónico es obligatorio')
+        .isEmail().withMessage('El correo electrónico no es válido')
+        .normalizeEmail(),
+    body('verificationCode')
+        .notEmpty().withMessage('El código de verificación es obligatorio')
+        .isLength({ min: 6, max: 6 }).withMessage('El código de verificación debe tener 6 dígitos')
+        .matches(/^\d{6}$/).withMessage('El código de verificación debe contener solo números'),
+
+    handleValidationErrors
+    ]
+
 
 module.exports = {
     validateRegister,
     validateLogin,
+    validateEmail
 }
