@@ -1,0 +1,57 @@
+const { body, param, validationResult } = require('express-validator');
+const User = require('../models/User');
+const Patient = require('../models/Patient');
+const Doctor = require('../models/Doctor');
+const Secretary = require('../models/Secretary');
+const admin = require('../models/admin');
+const { deleteOneFile } = require('../Utils/fileCleanup'); // Función para eliminar archivos
+
+const handleValidationErrors = (req, res, next) => {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(400).json({
+            ok:false,
+            messaeg:'Errores de validación',
+            errors: errors.mapped()
+        })
+    }
+    next();
+}
+
+
+// Middleware para validar los datos de registro
+const validateRegister = [
+    body('name')
+        .notEmpty().withMessage('El nombre es obligatorio')
+        .isLength({ min: 2 }).withMessage('El nombre debe tener al menos 2 caracteres')
+        .customSanitizer(value => value.trim()), // Elimina espacios al inicio y al final
+    body('surname')
+        .notEmpty().withMessage('El apellido es obligatorio')
+        .isLength({ min: 2 }).withMessage('El apellido debe tener al menos 2 caracteres')
+        .customSanitizer(value => value.trim()), // Elimina espacios al inicio y al final
+    body('email')
+        .notEmpty().withMessage('El correo electrónico es obligatorio')
+        .isEmail().withMessage('El correo electrónico no es válido')
+        .normalizeEmail()
+        .custom(async (email)=>{
+            const user = await User.findOne({email});
+            if(user){
+                throw new Error('Usuario ya existe!');
+            }
+        }),
+    body('password')
+        .notEmpty().withMessage('La contraseña es obligatoria')
+        .isLength({min:8}).withMessage('La contraseña debe tener al menos 8 caracteres')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('La contraseña debe contener al menos una letra minúscula, una letra mayúscula y un número.')
+        .matches(/\d/).withMessage('La contraseña debe contener al menos un número')
+        .customSanitizer(value => value.trim()), // Elimina espacios al inicio y al final
+
+    handleValidationErrors
+]
+
+
+
+
+module.exports = {
+    validateRegister,
+}
