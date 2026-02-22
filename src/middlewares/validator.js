@@ -69,7 +69,7 @@ const validateEmail = [
         .notEmpty().withMessage('El correo electrónico es obligatorio')
         .isEmail().withMessage('El correo electrónico no es válido')
         .normalizeEmail(),
-    body('verificationCode')
+    body('code')
         .notEmpty().withMessage('El código de verificación es obligatorio')
         .isLength({ min: 6, max: 6 }).withMessage('El código de verificación debe tener 6 dígitos')
         .matches(/^\d{6}$/).withMessage('El código de verificación debe contener solo números'),

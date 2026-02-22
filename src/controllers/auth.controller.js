@@ -2,7 +2,7 @@ const User = require('../models/User'); //Modelo base
 const Patient = require('../models/Patient'); // Modelo específico para pacientes
 const jwt = require('jsonwebtoken'); // Función para generar un token JWT
 const { deleteOneFile } = require('../Utils/fileCleanup'); // Función para eliminar archivos
-const { sendVerificationCode } = require('../Utils/emailService'); // Función para enviar correos de verificación
+const {sendVerificationEmail} = require('../Utils/emailService') // Función para enviar correos de verificación
 
 // Función para generar un token JWT con el ID del usuario para Login
 const generateToken = (id)=>{
@@ -10,70 +10,71 @@ const generateToken = (id)=>{
 }
 
 const register = async (req, res, next) => {
-    try{
-        const { name, surname, email, password} = req.body;
-        // Verifica si el usuario ya existe
-        const existingUser = await User.findOne({email});
-        if(existingUser){
-            return res.status(400).json({message: 'Usuario ya existe!!'});
+    try {
+        const { name, surname, email, password } = req.body;
+        // 1. Verificar si el usuario ya existe
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: '¡El usuario ya existe!' });
         }
-        // Crea el Usuario base
-        const newUser = await User.create({
+        // 2. Crear la instancia del Usuario (sin guardar todavía)
+        newUser = new User({
             name,
             surname,
             email,
             password,
-            role: 'patient' // Asigna el rol de paciente
+            role: 'patient'
         });
-        // Genera el código de verificación y actualiza el usuario
-        const code = newUser.generateVerificationCode(); 
-        // Guarda el usuario para obtener su ID y luego crear el registro específico para el paciente
+        // 3. Generar código de verificación (Método definido en tu User Model)
+        const code = newUser.generateVerificationCode();
+        // 4. Guardar el usuario en la DB
         const savedUser = await newUser.save();
-        try{
-            await sendVerificationCode(email, name, code);
-        } catch(emailError){
-            // Si falla eliminamos el usuario creado
-            await User.findByIdAndDelete(savedUser._id); // Elimina el usuario si hubo un error al enviar el correo
-            if(req.file){
-                deleteOneFile(req.file); // Elimina la imagen si se subió una
-            }
+        // 5. INTENTO: Enviar el correo de verificación
+        try {
+            await sendVerificationEmail(email, name, code);
+        } catch (emailError) {
+            // Si el email falla, borramos el usuario creado para que pueda re-intentar
+            console.error("Error enviando email:", emailError);
+            await User.findByIdAndDelete(savedUser._id);
+            if (req.file) deleteOneFile(req.file); // Limpiar imagen si existe
             return res.status(500).json({
-                ok:false,
-                message: 'Error al enviar el correo de verificación. Por favor, intenta registrarte nuevamente.'
+                ok: false,
+                message: 'Error al enviar el correo. Registro cancelado.',
+                error: emailError.message
             });
         }
-        // Crea el registro específico para el paciente
-        try{
+        // 6. INTENTO: Crear el perfil de Paciente (Relación 1 a 1)
+        try {
             const newPatient = await Patient.create({
                 userId: savedUser._id,
-                medicalHistory: [] // Puedes agregar campos adicionales según tus necesidades
+                medicalHistory: []
             });
-            // Guarda el paciente
-            await newPatient.save();
+            
+            // ÉXITO TOTAL
+            return res.status(201).json({
+                ok: true,
+                message: 'Registro exitoso. Revisa tu correo.',
+                user: {
+                    id: newPatient._id,
+                    name: savedUser.name,
+                    email: savedUser.email
+                }
+            });
 
-        } catch (patientError){
-            await User.findByIdAndDelete(savedUser._id); // Elimina el usuario si hubo un error al crear el paciente
+        } catch (patientError) {
+            // Si falla la creación del paciente, borramos el usuario también
+            await User.findByIdAndDelete(savedUser._id);
             return res.status(500).json({
-                ok:false,
-                message: 'Error al crear el perfil del paciente. Por favor, intenta registrarte nuevamente.'
+                ok: false,
+                message: 'Error al crear el perfil médico.'
             });
         }
-        return res.status(201).json({
-            ok:true,
-            message: 'Usuario registrado exitosamente. Por favor, verifica tu correo electrónico para activar tu cuenta.',
-            user: {
-                id: newPatient._id,
-                name: savedUser.name,
-                surname: savedUser.surname,
-                email: savedUser.email,
-            }
-        });
-    } catch(error){
-        // Elimina el usuario si hubo un error al crear el paciente
-        await User.findByIdAndDelete(newUser._id); 
+
+    } catch (error) {
+        // Error genérico (ej: fallo de conexión a la DB)
         next(error);
     }
-}
+};
 
 const login = async (req, res, next) => {
     try {
