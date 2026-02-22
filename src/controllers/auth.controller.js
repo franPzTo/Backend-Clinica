@@ -75,7 +75,44 @@ const register = async (req, res, next) => {
     }
 }
 
-const login = async (req, res, next) => {}
+const login = async (req, res, next) => {
+    try {
+        const {email, password} = req.body;
+        const user = await User.findOne({email})
+        const validPassword = await user.comparePassword(password);
+        if(!user || !validPassword){
+            return res.status(401).json({message: 'Credenciales inválidas!!'});
+        }
+        if(!user.isVerified){
+            return res.status(403).json({
+                ok:false,
+                message:'Cuenta no Válida!, Verifica tu correo electrónico para activar tu cuenta.'
+            })
+        }
+        const token = generateToken(user._id);
+        // Envía el token en una cookie segura
+        res.cookie('token', token,{
+            httpOnly: true,
+            sameSite:'lax', // Permite enviar cookies en solicitudes entre sitios, pero solo para solicitudes de navegación (no para solicitudes AJAX)
+            secure: true, // Asegura que la cookie solo se envíe a través de HTTPS
+            maxAge: 120*60*1000, // 2 horas
+        });
+        return res.status(200).json({
+            ok:true,
+            message:'Login exitoso!!',
+            user:{
+                id: user._id,
+                name: user.name,
+                surname: user.surname,
+                email: user.email,
+                role: user.role,
+            }
+        })
+    } catch (error){
+        next(error);
+    }
+}
+
 
 module.exports = {
     register,

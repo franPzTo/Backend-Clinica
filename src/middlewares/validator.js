@@ -6,6 +6,7 @@ const Secretary = require('../models/Secretary');
 const admin = require('../models/admin');
 const { deleteOneFile } = require('../Utils/fileCleanup'); // Función para eliminar archivos
 
+// Middleware para manejar los errores de validación
 const handleValidationErrors = (req, res, next) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
@@ -42,16 +43,29 @@ const validateRegister = [
     body('password')
         .notEmpty().withMessage('La contraseña es obligatoria')
         .isLength({min:8}).withMessage('La contraseña debe tener al menos 8 caracteres')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('La contraseña debe contener al menos una letra minúscula, una letra mayúscula y un número.')
-        .matches(/\d/).withMessage('La contraseña debe contener al menos un número')
+        .matches(/^[A-Za-z0-9\-(),.]+$/).withMessage('La contraseña solo puede contener letras, números y los caracteres especiales: - ( ) , .')
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\-(),.]+$/).withMessage('La contraseña debe contener al menos una letra y un número')
+        .customSanitizer(value => value.trim()), // Elimina espacios al inicio y al final
+        
+        handleValidationErrors
+]
+
+    const validateLogin = [
+    body('email')
+        .notEmpty().withMessage('El correo electrónico es obligatorio')
+        .isEmail().withMessage('El correo electrónico no es válido')
+        .normalizeEmail(),
+    body('password')
+        .notEmpty().withMessage('La contraseña es obligatoria')
+        .matches(/^[A-Za-z0-9\-(),.]+$/).withMessage('La contraseña solo puede contener letras, números y los caracteres especiales: - ( ) , .')
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\-(),.]+$/).withMessage('La contraseña debe contener al menos una letra y un número')
         .customSanitizer(value => value.trim()), // Elimina espacios al inicio y al final
 
     handleValidationErrors
 ]
 
 
-
-
 module.exports = {
     validateRegister,
+    validateLogin,
 }
