@@ -20,9 +20,9 @@ const profileStorage = multer.diskStorage({
 });
 
 //Configuracion de almacenamiento de las imagenes para los productos
-const productsStorage = multer.diskStorage({
+const DNIStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const  uploadPath = path.join(__dirname, '../../uploads/products');
+        const  uploadPath = path.join(__dirname, '../../uploads/DNI');
         if(!fs.existsSync(uploadPath)){
             fs.mkdirSync(uploadPath, {recursive: true})
         }
@@ -30,7 +30,7 @@ const productsStorage = multer.diskStorage({
     },
 
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-product-' + crypto.randomUUID() + path.extname(file.originalname);
+        const uniqueSuffix = Date.now() + '-DNI-' + crypto.randomUUID() + path.extname(file.originalname);
         cb(null, uniqueSuffix)
     }   
 });
@@ -55,15 +55,15 @@ const uploadProfile = multer({
     fileFilter: fileFilter
 }).single('profilePic');
 
-//Configuración para la subida de las imagenes de los libros (1-3 máximo | max 2MB c/u)
-const uploadProductImages = multer({
-    storage: productsStorage,
+//Configuración para la subida de las imagenes del DNI (1-2 máximo | max 2MB c/u)
+const uploadProfileDNI = multer({
+    storage: DNIStorage,
     limits: {fileSize: 2 * 1024 * 1024}, //2MB
     fileFilter: fileFilter
-}).array('productImages', 3);// array me permite subir hasta 3 archivos. 
+}).array('ProfileDNI', 2);// array me permite subir hasta 2 archivos. 
 
 //exportar la función
 module.exports = {
     uploadProfile,
-    uploadProductImages
+    uploadProfileDNI
 }
