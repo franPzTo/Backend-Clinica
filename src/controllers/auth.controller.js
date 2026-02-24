@@ -151,7 +151,6 @@ const verifyEmail = async (req,res,next)=>{
     }
 }
 
-
 const logout = async (req,res,next)=>{
     try {
         res.clearCookie('token');
@@ -164,9 +163,24 @@ const logout = async (req,res,next)=>{
     }
 }
 
+const getUserProfile = async (req,res,next)=>{
+    try{
+        const user = await User.findById(req.user._id)
+        .select('name surname emial');
+        return res.status(200).json({
+            ok:true,
+            message:'Perfil de usuario obtenido correctamente.',
+            data: user
+        })
+    } catch(error){
+        next(error)
+    }
+}
+
 module.exports = {
     register,
     login,
     verifyEmail,
-    logout
+    logout,
+    getUserProfile
 }
