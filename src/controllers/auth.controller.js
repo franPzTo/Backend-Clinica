@@ -80,11 +80,13 @@ const login = async (req, res, next) => {
     try {
         const {email, password} = req.body;
         const user = await User.findOne({email})
-        const validPassword = await user.comparePassword(password);
+        const validPassword = await user.comparePasswords(password);
         if(!user || !validPassword){
-            return res.status(401).json({message: 'Credenciales inválidas!!'});
+            return res.status(401).json({
+                ok:false,
+                message: 'Credenciales inválidas!!'});
         }
-        if(!user.isVerified){
+        if(!user.verifiedEmail){
             return res.status(403).json({
                 ok:false,
                 message:'Cuenta no Válida!, Verifica tu correo electrónico para activar tu cuenta.'
@@ -150,9 +152,21 @@ const verifyEmail = async (req,res,next)=>{
 }
 
 
+const logout = async (req,res,next)=>{
+    try {
+        res.clearCookie('token');
+        return res.status(200).json({
+            ok:true,
+            message:'Logout exitoso!!'
+        })
+    } catch(error){
+        next(error)
+    }
+}
 
 module.exports = {
     register,
     login,
-    verifyEmail
+    verifyEmail,
+    logout
 }
